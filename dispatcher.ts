@@ -1,3 +1,4 @@
+import { INTERVAL_MS } from "./params";
 import { SERVICE_CLIENT } from "./service_client";
 import {
   listGcsFileDeleteTasks,
@@ -39,7 +40,7 @@ export class Dispatcher {
       this.dispatchGcsFileDeleteTasks(),
       this.dispatchR2KeyDeleteTasks(),
     ]);
-    this.setTimeout(() => this.dispatch(), 1000);
+    this.setTimeout(() => this.dispatch(), INTERVAL_MS);
   }
 
   private async dispatchWritingToFileTasks(): Promise<void> {
