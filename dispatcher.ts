@@ -1,43 +1,56 @@
-import { INTERVAL_MS } from "./params";
+import promClient = require("prom-client");
 import { SERVICE_CLIENT } from "./service_client";
-import {
-  listCoverImageDeletingTasks,
-  listVideoContainerCreatingTasks,
-  listVideoContainerDeletingTasks,
-  processCoverImageDeletingTask,
-  processVideoContainerCreatingTask,
-  processVideoContainerDeletingTask,
-} from "@phading/product_service_interface/show/node/client";
-import {
-  listGcsFileDeletingTasks,
-  listMediaFormattingTasks,
-  listR2KeyDeletingTasks,
-  listStorageEndRecordingTasks,
-  listStorageStartRecordingTasks,
-  listSubtitleFormattingTasks,
-  listUploadedRecordingTasks,
-  listVideoContainerSyncingTasks,
-  listVideoContainerWritingToFileTasks,
-  processGcsFileDeletingTask,
-  processMediaFormattingTask,
-  processR2KeyDeletingTask,
-  processStorageEndRecordingTask,
-  processStorageStartRecordingTask,
-  processSubtitleFormattingTask,
-  processUploadedRecordingTask,
-  processVideoContainerSyncingTask,
-  processVideoContainerWritingToFileTask,
-} from "@phading/video_service_interface/node/client";
+import { StatusCode } from "@selfage/http_error";
 import { NodeServiceClient } from "@selfage/node_service_client";
+import { ClientRequestInterface } from "@selfage/service_descriptor/client_request_interface";
 
-export class Dispatcher {
-  public static create(): Dispatcher {
-    return new Dispatcher(SERVICE_CLIENT, setTimeout);
+let TOTAL_COUNTER = new promClient.Counter({
+  name: "dispathced_tasks_total",
+  help: "The total number of tasks being dispatched.",
+  labelNames: ["taskName"],
+});
+let FAILURE_COUNTER = new promClient.Counter({
+  name: "dispathced_tasks_failure",
+  help: "The number of tasks failed to be processed.",
+  labelNames: ["taskName", "errorCode"],
+});
+
+export interface ListRequest {}
+
+export interface ListResponse<ProcessRequest> {
+  tasks: ProcessRequest[];
+}
+
+export class Dispatcher<ProcessRequest, ProcessResponse> {
+  public static create<ProcessRequest, ProcessResponse>(
+    newListTasksRequest: (
+      body: ListRequest,
+    ) => ClientRequestInterface<ListResponse<ProcessRequest>>,
+    newProcessTaskRequest: (
+      body: ProcessRequest,
+    ) => ClientRequestInterface<ProcessResponse>,
+  ): Dispatcher<ProcessRequest, ProcessResponse> {
+    return new Dispatcher(
+      SERVICE_CLIENT,
+      setTimeout,
+      () => Date.now(),
+      newListTasksRequest,
+      newProcessTaskRequest,
+    );
   }
+
+  private static LEAST_INTERVAL_MS = 1000;
 
   public constructor(
     private serviceClient: NodeServiceClient,
     private setTimeout: (callback: Function, ms: number) => NodeJS.Timeout,
+    private getNow: () => number,
+    private newListTasksRequest: (
+      body: ListRequest,
+    ) => ClientRequestInterface<ListResponse<ProcessRequest>>,
+    private newProcessTaskRequest: (
+      body: ProcessRequest,
+    ) => ClientRequestInterface<ProcessResponse>,
   ) {}
 
   public start(): this {
@@ -46,159 +59,30 @@ export class Dispatcher {
   }
 
   private async dispatch(): Promise<void> {
-    await Promise.all([
-      this.dispatchVideoContainerCreatingTasks(),
-      this.dispatchVideoContainerDeletingTasks(),
-      this.dispatchCoverImageDeletingTasks(),
-      this.dispatchWritingToFileTasks(),
-      this.dispatchSyncingTasks(),
-      this.dispatchUploadedRecordingTasks(),
-      this.dispatchMediaFormattingTasks(),
-      this.dispatchSubtitleFormattingTasks(),
-      this.dispatchStorageStartRecordingTasks(),
-      this.dispatchStorageEndRecordingTasks(),
-      this.dispatchGcsFileDeletingTasks(),
-      this.dispatchR2KeyDeletingTasks(),
-    ]);
-    this.setTimeout(() => this.dispatch(), INTERVAL_MS);
-  }
-
-  private async dispatchVideoContainerCreatingTasks(): Promise<void> {
-    let { tasks } = await listVideoContainerCreatingTasks(
-      this.serviceClient,
-      {},
-    );
-    await Promise.all(
-      tasks.map((task) =>
-        processVideoContainerCreatingTask(this.serviceClient, task).catch(
-          (e) => {},
-        ),
-      ),
+    let startTime = this.getNow();
+    await this.dispatchOnce();
+    let elaspedTime = this.getNow() - startTime;
+    this.setTimeout(
+      () => this.dispatch(),
+      Math.max(0, Dispatcher.LEAST_INTERVAL_MS - elaspedTime),
     );
   }
 
-  private async dispatchVideoContainerDeletingTasks(): Promise<void> {
-    let { tasks } = await listVideoContainerDeletingTasks(
-      this.serviceClient,
-      {},
-    );
+  private async dispatchOnce(): Promise<void> {
+    let { tasks } = await this.serviceClient.send(this.newListTasksRequest({}));
     await Promise.all(
-      tasks.map((task) =>
-        processVideoContainerDeletingTask(this.serviceClient, task).catch(
-          (e) => {},
-        ),
-      ),
-    );
-  }
-
-  private async dispatchCoverImageDeletingTasks(): Promise<void> {
-    let { tasks } = await listCoverImageDeletingTasks(this.serviceClient, {});
-    await Promise.all(
-      tasks.map((task) =>
-        processCoverImageDeletingTask(this.serviceClient, task).catch(
-          (e) => {},
-        ),
-      ),
-    );
-  }
-
-  private async dispatchWritingToFileTasks(): Promise<void> {
-    let { tasks } = await listVideoContainerWritingToFileTasks(
-      this.serviceClient,
-      {},
-    );
-    await Promise.all(
-      tasks.map((task) =>
-        processVideoContainerWritingToFileTask(this.serviceClient, task).catch(
-          (e) => {},
-        ),
-      ),
-    );
-  }
-
-  private async dispatchSyncingTasks(): Promise<void> {
-    let { tasks } = await listVideoContainerSyncingTasks(
-      this.serviceClient,
-      {},
-    );
-    await Promise.all(
-      tasks.map((task) =>
-        processVideoContainerSyncingTask(this.serviceClient, task).catch(
-          (e) => {},
-        ),
-      ),
-    );
-  }
-
-  private async dispatchUploadedRecordingTasks(): Promise<void> {
-    let { tasks } = await listUploadedRecordingTasks(this.serviceClient, {});
-    await Promise.all(
-      tasks.map((task) =>
-        processUploadedRecordingTask(this.serviceClient, task).catch((e) => {}),
-      ),
-    );
-  }
-
-  private async dispatchMediaFormattingTasks(): Promise<void> {
-    let { tasks } = await listMediaFormattingTasks(this.serviceClient, {});
-    await Promise.all(
-      tasks.map((task) =>
-        processMediaFormattingTask(this.serviceClient, task).catch((e) => {}),
-      ),
-    );
-  }
-
-  private async dispatchSubtitleFormattingTasks(): Promise<void> {
-    let { tasks } = await listSubtitleFormattingTasks(this.serviceClient, {});
-    await Promise.all(
-      tasks.map((task) =>
-        processSubtitleFormattingTask(this.serviceClient, task).catch(
-          (e) => {},
-        ),
-      ),
-    );
-  }
-
-  private async dispatchStorageStartRecordingTasks(): Promise<void> {
-    let { tasks } = await listStorageStartRecordingTasks(
-      this.serviceClient,
-      {},
-    );
-    await Promise.all(
-      tasks.map((task) =>
-        processStorageStartRecordingTask(this.serviceClient, task).catch(
-          (e) => {},
-        ),
-      ),
-    );
-  }
-
-  private async dispatchStorageEndRecordingTasks(): Promise<void> {
-    let { tasks } = await listStorageEndRecordingTasks(this.serviceClient, {});
-    await Promise.all(
-      tasks.map((task) =>
-        processStorageEndRecordingTask(this.serviceClient, task).catch(
-          (e) => {},
-        ),
-      ),
-    );
-  }
-
-  private async dispatchGcsFileDeletingTasks(): Promise<void> {
-    let { tasks } = await listGcsFileDeletingTasks(this.serviceClient, {});
-    await Promise.all(
-      tasks.map((task) =>
-        processGcsFileDeletingTask(this.serviceClient, task).catch((e) => {}),
-      ),
-    );
-  }
-
-  private async dispatchR2KeyDeletingTasks(): Promise<void> {
-    let { tasks } = await listR2KeyDeletingTasks(this.serviceClient, {});
-    await Promise.all(
-      tasks.map((task) =>
-        processR2KeyDeletingTask(this.serviceClient, task).catch((e) => {}),
-      ),
+      tasks.map(async (task): Promise<void> => {
+        let request = this.newProcessTaskRequest(task);
+        TOTAL_COUNTER.inc({ taskName: request.descriptor.name });
+        try {
+          await this.serviceClient.send(request);
+        } catch (e) {
+          FAILURE_COUNTER.inc({
+            taskName: request.descriptor.name,
+            errorCode: e.statusCode ?? StatusCode.InternalServerError,
+          });
+        }
+      }),
     );
   }
 }
