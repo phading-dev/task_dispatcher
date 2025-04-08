@@ -2,19 +2,19 @@ import http = require("http");
 import { Dispatcher } from "./dispatcher";
 import { ENV_VARS } from "./env_vars";
 import {
-  newListBillingProfileStateSyncingTasksRequest,
-  newListBillingProfileSuspendingDueToPastDueTasksRequest,
-  newListBillingProfileSuspensionNotifyingTasksRequest,
   newListPaymentMethodNeedsUpdateNotifyingTasksRequest,
+  newListPaymentProfileStateSyncingTasksRequest,
+  newListPaymentProfileSuspendingDueToPastDueTasksRequest,
+  newListPaymentProfileSuspensionNotifyingTasksRequest,
   newListPaymentTasksRequest,
   newListPayoutTasksRequest,
   newListStripeConnectedAccountCreatingTasksRequest,
   newListStripeConnectedAccountNeedsSetupNotifyingTasksRequest,
   newListStripePaymentCustomerCreatingTasksRequest,
-  newProcessBillingProfileStateSyncingTaskRequest,
-  newProcessBillingProfileSuspendingDueToPastDueTaskRequest,
-  newProcessBillingProfileSuspensionNotifyingTaskRequest,
   newProcessPaymentMethodNeedsUpdateNotifyingTaskRequest,
+  newProcessPaymentProfileStateSyncingTaskRequest,
+  newProcessPaymentProfileSuspendingDueToPastDueTaskRequest,
+  newProcessPaymentProfileSuspensionNotifyingTaskRequest,
   newProcessPaymentTaskRequest,
   newProcessPayoutTaskRequest,
   newProcessStripeConnectedAccountCreatingTaskRequest,
@@ -31,11 +31,11 @@ import {
 } from "@phading/product_service_interface/show/node/client";
 import {
   newListAccountCapabilitiesUpdatingTasksRequest,
-  newListBillingProfileCreatingTasksRequest,
-  newListEarningsProfileCreatingTasksRequest,
+  newListPaymentProfileCreatingTasksRequest,
+  newListPayoutProfileCreatingTasksRequest,
   newProcessAccountCapabilitiesUpdatingTaskRequest,
-  newProcessBillingProfileCreatingTaskRequest,
-  newProcessEarningsProfileCreatingTaskRequest,
+  newProcessPaymentProfileCreatingTaskRequest,
+  newProcessPayoutProfileCreatingTaskRequest,
 } from "@phading/user_service_interface/node/client";
 import {
   newListGcsFileDeletingTasksRequest,
@@ -62,8 +62,28 @@ import { ServiceHandler } from "@selfage/service_handler/service_handler";
 async function main() {
   // Commerce service
   Dispatcher.create(
-    newListStripePaymentCustomerCreatingTasksRequest,
-    newProcessStripePaymentCustomerCreatingTaskRequest,
+    newListPaymentMethodNeedsUpdateNotifyingTasksRequest,
+    newProcessPaymentMethodNeedsUpdateNotifyingTaskRequest,
+  ).start();
+  Dispatcher.create(
+    newListPaymentProfileSuspendingDueToPastDueTasksRequest,
+    newProcessPaymentProfileSuspendingDueToPastDueTaskRequest,
+  ).start();
+  Dispatcher.create(
+    newListPaymentProfileSuspensionNotifyingTasksRequest,
+    newProcessPaymentProfileSuspensionNotifyingTaskRequest,
+  ).start();
+  Dispatcher.create(
+    newListPaymentProfileStateSyncingTasksRequest,
+    newProcessPaymentProfileStateSyncingTaskRequest,
+  ).start();
+  Dispatcher.create(
+    newListPaymentTasksRequest,
+    newProcessPaymentTaskRequest,
+  ).start();
+  Dispatcher.create(
+    newListPayoutTasksRequest,
+    newProcessPayoutTaskRequest,
   ).start();
   Dispatcher.create(
     newListStripeConnectedAccountCreatingTasksRequest,
@@ -74,28 +94,8 @@ async function main() {
     newProcessStripeConnectedAccountNeedsSetupNotifyingTaskRequest,
   ).start();
   Dispatcher.create(
-    newListPaymentTasksRequest,
-    newProcessPaymentTaskRequest,
-  ).start();
-  Dispatcher.create(
-    newListPaymentMethodNeedsUpdateNotifyingTasksRequest,
-    newProcessPaymentMethodNeedsUpdateNotifyingTaskRequest,
-  ).start();
-  Dispatcher.create(
-    newListBillingProfileSuspendingDueToPastDueTasksRequest,
-    newProcessBillingProfileSuspendingDueToPastDueTaskRequest,
-  ).start();
-  Dispatcher.create(
-    newListBillingProfileSuspensionNotifyingTasksRequest,
-    newProcessBillingProfileSuspensionNotifyingTaskRequest,
-  ).start();
-  Dispatcher.create(
-    newListBillingProfileStateSyncingTasksRequest,
-    newProcessBillingProfileStateSyncingTaskRequest,
-  ).start();
-  Dispatcher.create(
-    newListPayoutTasksRequest,
-    newProcessPayoutTaskRequest,
+    newListStripePaymentCustomerCreatingTasksRequest,
+    newProcessStripePaymentCustomerCreatingTaskRequest,
   ).start();
 
   // Product service
@@ -118,12 +118,12 @@ async function main() {
     newProcessAccountCapabilitiesUpdatingTaskRequest,
   ).start();
   Dispatcher.create(
-    newListBillingProfileCreatingTasksRequest,
-    newProcessBillingProfileCreatingTaskRequest,
+    newListPaymentProfileCreatingTasksRequest,
+    newProcessPaymentProfileCreatingTaskRequest,
   ).start();
   Dispatcher.create(
-    newListEarningsProfileCreatingTasksRequest,
-    newProcessEarningsProfileCreatingTaskRequest,
+    newListPayoutProfileCreatingTasksRequest,
+    newProcessPayoutProfileCreatingTaskRequest,
   ).start();
 
   // Video service
