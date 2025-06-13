@@ -5,12 +5,12 @@ import { NodeServiceClient } from "@selfage/node_service_client";
 import { ClientRequestInterface } from "@selfage/service_descriptor/client_request_interface";
 
 let TOTAL_COUNTER = new promClient.Counter({
-  name: "dispathced_tasks_total",
+  name: "dispatched_tasks_total",
   help: "The total number of tasks being dispatched.",
   labelNames: ["taskName"],
 });
 let FAILURE_COUNTER = new promClient.Counter({
-  name: "dispathced_tasks_failure",
+  name: "dispatched_tasks_failure",
   help: "The number of tasks failed to be processed.",
   labelNames: ["taskName", "errorCode"],
 });
