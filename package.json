@@ -31,6 +31,6 @@
     "@phading/user_service_interface": "^1.2.8",
     "@phading/video_service_interface": "^1.1.2",
     "@selfage/node_service_client": "^2.2.2",
-    "@selfage/service_handler": "^7.4.0"
+    "@selfage/service_handler": "^7.5.0"
   }
 }
