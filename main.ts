@@ -23,11 +23,11 @@ import {
 } from "@phading/commerce_service_interface/node/client";
 import {
   newListCoverImageDeletingTasksRequest,
-  newListSeasonRecentPremierTimeUpdatingTasksRequest,
+  newListSeasonRecentPremiereTimeUpdatingTasksRequest,
   newListVideoContainerCreatingTasksRequest,
   newListVideoContainerDeletingTasksRequest,
   newProcessCoverImageDeletingTaskRequest,
-  newProcessSeasonRecentPremierTimeUpdatingTaskRequest,
+  newProcessSeasonRecentPremiereTimeUpdatingTaskRequest,
   newProcessVideoContainerCreatingTaskRequest,
   newProcessVideoContainerDeletingTaskRequest,
 } from "@phading/product_service_interface/show/node/client";
@@ -106,8 +106,8 @@ async function main() {
     newProcessCoverImageDeletingTaskRequest,
   ).start();
   Dispatcher.create(
-    newListSeasonRecentPremierTimeUpdatingTasksRequest,
-    newProcessSeasonRecentPremierTimeUpdatingTaskRequest,
+    newListSeasonRecentPremiereTimeUpdatingTasksRequest,
+    newProcessSeasonRecentPremiereTimeUpdatingTaskRequest,
   ).start();
   Dispatcher.create(
     newListVideoContainerCreatingTasksRequest,
