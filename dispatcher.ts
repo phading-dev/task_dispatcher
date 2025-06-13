@@ -81,7 +81,7 @@ export class Dispatcher<ProcessRequest, ProcessResponse> {
   private async dispatchOnce(): Promise<void> {
     let listRequest = this.newListTasksRequest({});
     LIST_TOTAL_COUNTER.inc({
-      path: listRequest.descriptor.service.path + listRequest.descriptor.name,
+      path: listRequest.descriptor.service.path + listRequest.descriptor.path,
     });
     let tasks: Array<ProcessRequest>;
     try {
@@ -104,7 +104,7 @@ export class Dispatcher<ProcessRequest, ProcessResponse> {
         DISPATCH_TOTAL_COUNTER.inc({
           path:
             dispatchRequest.descriptor.service.path +
-            dispatchRequest.descriptor.name,
+            dispatchRequest.descriptor.path,
         });
         try {
           await this.serviceClient.send(dispatchRequest);
