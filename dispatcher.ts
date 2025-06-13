@@ -7,22 +7,22 @@ import { ClientRequestInterface } from "@selfage/service_descriptor/client_reque
 let LIST_TOTAL_COUNTER = new promClient.Counter({
   name: "list_tasks_total",
   help: "The total number of requests to list tasks.",
-  labelNames: ["taskName"],
+  labelNames: ["path"],
 });
 let LIST_FAILURE_COUNTER = new promClient.Counter({
   name: "list_tasks_failure",
   help: "The number of requests to list tasks that failed.",
-  labelNames: ["taskName", "errorCode"],
+  labelNames: ["path", "errorCode"],
 });
-let DISPATCHED_TOTAL_COUNTER = new promClient.Counter({
-  name: "dispatched_tasks_total",
+let DISPATCH_TOTAL_COUNTER = new promClient.Counter({
+  name: "dispatch_tasks_total",
   help: "The total number of tasks being dispatched.",
-  labelNames: ["taskName"],
+  labelNames: ["path"],
 });
-let DISPATCHED_FAILURE_COUNTER = new promClient.Counter({
-  name: "dispatched_tasks_failure",
+let DISPATCH_FAILURE_COUNTER = new promClient.Counter({
+  name: "dispatch_tasks_failure",
   help: "The number of tasks failed to be processed.",
-  labelNames: ["taskName", "errorCode"],
+  labelNames: ["path", "errorCode"],
 });
 
 export interface ListRequest {}
@@ -80,13 +80,15 @@ export class Dispatcher<ProcessRequest, ProcessResponse> {
 
   private async dispatchOnce(): Promise<void> {
     let listRequest = this.newListTasksRequest({});
-    LIST_TOTAL_COUNTER.inc({ taskName: listRequest.descriptor.name });
+    LIST_TOTAL_COUNTER.inc({
+      path: listRequest.descriptor.service.path + listRequest.descriptor.name,
+    });
     let tasks: Array<ProcessRequest>;
     try {
       ({ tasks } = await this.serviceClient.send(listRequest));
     } catch (e) {
       LIST_FAILURE_COUNTER.inc({
-        taskName: listRequest.descriptor.name,
+        path: listRequest.descriptor.service.path + listRequest.descriptor.name,
         errorCode: e.statusCode ?? StatusCode.InternalServerError,
       });
       console.error(
@@ -99,14 +101,18 @@ export class Dispatcher<ProcessRequest, ProcessResponse> {
     await Promise.all(
       tasks.map(async (task): Promise<void> => {
         let dispatchRequest = this.newProcessTaskRequest(task);
-        DISPATCHED_TOTAL_COUNTER.inc({
-          taskName: dispatchRequest.descriptor.name,
+        DISPATCH_TOTAL_COUNTER.inc({
+          path:
+            dispatchRequest.descriptor.service.path +
+            dispatchRequest.descriptor.name,
         });
         try {
           await this.serviceClient.send(dispatchRequest);
         } catch (e) {
-          DISPATCHED_FAILURE_COUNTER.inc({
-            taskName: dispatchRequest.descriptor.name,
+          DISPATCH_FAILURE_COUNTER.inc({
+            path:
+              dispatchRequest.descriptor.service.path +
+              dispatchRequest.descriptor.name,
             errorCode: e.statusCode ?? StatusCode.InternalServerError,
           });
           console.error(
