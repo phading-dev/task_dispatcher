@@ -4,12 +4,22 @@ import { StatusCode } from "@selfage/http_error";
 import { NodeServiceClient } from "@selfage/node_service_client";
 import { ClientRequestInterface } from "@selfage/service_descriptor/client_request_interface";
 
-let TOTAL_COUNTER = new promClient.Counter({
+let LIST_TOTAL_COUNTER = new promClient.Counter({
+  name: "list_tasks_total",
+  help: "The total number of requests to list tasks.",
+  labelNames: ["taskName"],
+});
+let LIST_FAILURE_COUNTER = new promClient.Counter({
+  name: "list_tasks_failure",
+  help: "The number of requests to list tasks that failed.",
+  labelNames: ["taskName", "errorCode"],
+});
+let DISPATCHED_TOTAL_COUNTER = new promClient.Counter({
   name: "dispatched_tasks_total",
   help: "The total number of tasks being dispatched.",
   labelNames: ["taskName"],
 });
-let FAILURE_COUNTER = new promClient.Counter({
+let DISPATCHED_FAILURE_COUNTER = new promClient.Counter({
   name: "dispatched_tasks_failure",
   help: "The number of tasks failed to be processed.",
   labelNames: ["taskName", "errorCode"],
@@ -69,18 +79,40 @@ export class Dispatcher<ProcessRequest, ProcessResponse> {
   }
 
   private async dispatchOnce(): Promise<void> {
-    let { tasks } = await this.serviceClient.send(this.newListTasksRequest({}));
+    let listRequest = this.newListTasksRequest({});
+    LIST_TOTAL_COUNTER.inc({ taskName: listRequest.descriptor.name });
+    let tasks: Array<ProcessRequest>;
+    try {
+      ({ tasks } = await this.serviceClient.send(listRequest));
+    } catch (e) {
+      LIST_FAILURE_COUNTER.inc({
+        taskName: listRequest.descriptor.name,
+        errorCode: e.statusCode ?? StatusCode.InternalServerError,
+      });
+      console.error(
+        `Failed to list tasks for ${listRequest.descriptor.name}:`,
+        e,
+      );
+      return;
+    }
+
     await Promise.all(
       tasks.map(async (task): Promise<void> => {
-        let request = this.newProcessTaskRequest(task);
-        TOTAL_COUNTER.inc({ taskName: request.descriptor.name });
+        let dispatchRequest = this.newProcessTaskRequest(task);
+        DISPATCHED_TOTAL_COUNTER.inc({
+          taskName: dispatchRequest.descriptor.name,
+        });
         try {
-          await this.serviceClient.send(request);
+          await this.serviceClient.send(dispatchRequest);
         } catch (e) {
-          FAILURE_COUNTER.inc({
-            taskName: request.descriptor.name,
+          DISPATCHED_FAILURE_COUNTER.inc({
+            taskName: dispatchRequest.descriptor.name,
             errorCode: e.statusCode ?? StatusCode.InternalServerError,
           });
+          console.error(
+            `Failed to process task for ${dispatchRequest.descriptor.name}:`,
+            e,
+          );
         }
       }),
     );
