@@ -4,6 +4,8 @@ metadata:
   name: task-dispatcher-deployment
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: task-dispatcher-pod

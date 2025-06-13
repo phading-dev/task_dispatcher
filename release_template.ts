@@ -67,6 +67,8 @@ metadata:
   name: ${ENV_VARS.releaseServiceName}-deployment
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: ${ENV_VARS.releaseServiceName}-pod
