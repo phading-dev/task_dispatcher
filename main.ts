@@ -24,11 +24,9 @@ import {
 import {
   newListCoverImageDeletingTasksRequest,
   newListSeasonRecentPremiereTimeUpdatingTasksRequest,
-  newListVideoContainerCreatingTasksRequest,
   newListVideoContainerDeletingTasksRequest,
   newProcessCoverImageDeletingTaskRequest,
   newProcessSeasonRecentPremiereTimeUpdatingTaskRequest,
-  newProcessVideoContainerCreatingTaskRequest,
   newProcessVideoContainerDeletingTaskRequest,
 } from "@phading/product_service_interface/show/node/client";
 import {
@@ -108,10 +106,6 @@ async function main() {
   Dispatcher.create(
     newListSeasonRecentPremiereTimeUpdatingTasksRequest,
     newProcessSeasonRecentPremiereTimeUpdatingTaskRequest,
-  ).start();
-  Dispatcher.create(
-    newListVideoContainerCreatingTasksRequest,
-    newProcessVideoContainerCreatingTaskRequest,
   ).start();
   Dispatcher.create(
     newListVideoContainerDeletingTasksRequest,
