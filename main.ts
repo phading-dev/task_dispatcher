@@ -31,9 +31,11 @@ import {
 } from "@phading/product_service_interface/show/node/client";
 import {
   newListAccountCapabilitiesUpdatingTasksRequest,
+  newListAvatarImageDeletingTasksRequest,
   newListPaymentProfileCreatingTasksRequest,
   newListPayoutProfileCreatingTasksRequest,
   newProcessAccountCapabilitiesUpdatingTaskRequest,
+  newProcessAvatarImageDeletingTaskRequest,
   newProcessPaymentProfileCreatingTaskRequest,
   newProcessPayoutProfileCreatingTaskRequest,
 } from "@phading/user_service_interface/node/client";
@@ -116,6 +118,10 @@ async function main() {
   Dispatcher.create(
     newListAccountCapabilitiesUpdatingTasksRequest,
     newProcessAccountCapabilitiesUpdatingTaskRequest,
+  ).start();
+  Dispatcher.create(
+    newListAvatarImageDeletingTasksRequest,
+    newProcessAvatarImageDeletingTaskRequest,
   ).start();
   Dispatcher.create(
     newListPaymentProfileCreatingTasksRequest,
