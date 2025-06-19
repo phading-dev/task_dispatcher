@@ -88,11 +88,11 @@ export class Dispatcher<ProcessRequest, ProcessResponse> {
       ({ tasks } = await this.serviceClient.send(listRequest));
     } catch (e) {
       LIST_FAILURE_COUNTER.inc({
-        path: listRequest.descriptor.service.path + listRequest.descriptor.name,
+        path: listRequest.descriptor.service.path + listRequest.descriptor.path,
         errorCode: e.statusCode ?? StatusCode.InternalServerError,
       });
       console.error(
-        `Failed to list tasks for ${listRequest.descriptor.name}:`,
+        `Failed to list tasks for ${listRequest.descriptor.service.path + listRequest.descriptor.path}:`,
         e,
       );
       return;
@@ -112,11 +112,14 @@ export class Dispatcher<ProcessRequest, ProcessResponse> {
           DISPATCH_FAILURE_COUNTER.inc({
             path:
               dispatchRequest.descriptor.service.path +
-              dispatchRequest.descriptor.name,
+              dispatchRequest.descriptor.path,
             errorCode: e.statusCode ?? StatusCode.InternalServerError,
           });
           console.error(
-            `Failed to process task for ${dispatchRequest.descriptor.name}:`,
+            `Failed to process task for ${
+              dispatchRequest.descriptor.service.path +
+              dispatchRequest.descriptor.path
+            }:`,
             e,
           );
         }
