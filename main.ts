@@ -40,8 +40,10 @@ import {
   newProcessPayoutProfileCreatingTaskRequest,
 } from "@phading/user_service_interface/node/client";
 import {
-  newListGcsFileDeletingTasksRequest,
+  newListGcsKeyDeletingTasksRequest,
+  newListGcsUploadFileDeletingTasksRequest,
   newListMediaFormattingTasksRequest,
+  newListMediaUploadingTasksRequest,
   newListR2KeyDeletingTasksRequest,
   newListStorageEndRecordingTasksRequest,
   newListStorageStartRecordingTasksRequest,
@@ -49,8 +51,10 @@ import {
   newListUploadedRecordingTasksRequest,
   newListVideoContainerSyncingTasksRequest,
   newListVideoContainerWritingToFileTasksRequest,
-  newProcessGcsFileDeletingTaskRequest,
+  newProcessGcsKeyDeletingTaskRequest,
+  newProcessGcsUploadFileDeletingTaskRequest,
   newProcessMediaFormattingTaskRequest,
+  newProcessMediaUploadingTaskRequest,
   newProcessR2KeyDeletingTaskRequest,
   newProcessStorageEndRecordingTaskRequest,
   newProcessStorageStartRecordingTaskRequest,
@@ -134,12 +138,20 @@ async function main() {
 
   // Video service
   Dispatcher.create(
-    newListGcsFileDeletingTasksRequest,
-    newProcessGcsFileDeletingTaskRequest,
+    newListGcsKeyDeletingTasksRequest,
+    newProcessGcsKeyDeletingTaskRequest,
+  ).start();
+  Dispatcher.create(
+    newListGcsUploadFileDeletingTasksRequest,
+    newProcessGcsUploadFileDeletingTaskRequest,
   ).start();
   Dispatcher.create(
     newListMediaFormattingTasksRequest,
     newProcessMediaFormattingTaskRequest,
+  ).start();
+  Dispatcher.create(
+    newListMediaUploadingTasksRequest,
+    newProcessMediaUploadingTaskRequest,
   ).start();
   Dispatcher.create(
     newListR2KeyDeletingTasksRequest,
