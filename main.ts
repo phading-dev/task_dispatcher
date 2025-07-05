@@ -2,6 +2,7 @@ import http = require("http");
 import { Dispatcher } from "./dispatcher";
 import { ENV_VARS } from "./env_vars";
 import {
+  newListInitPaymentCreditGrantingTasksRequest,
   newListPaymentMethodNeedsUpdateNotifyingTasksRequest,
   newListPaymentProfileStateSyncingTasksRequest,
   newListPaymentProfileSuspendingDueToPastDueTasksRequest,
@@ -11,6 +12,7 @@ import {
   newListStripeConnectedAccountCreatingTasksRequest,
   newListStripeConnectedAccountNeedsSetupNotifyingTasksRequest,
   newListStripePaymentCustomerCreatingTasksRequest,
+  newProcessInitPaymentCreditGrantingTaskRequest,
   newProcessPaymentMethodNeedsUpdateNotifyingTaskRequest,
   newProcessPaymentProfileStateSyncingTaskRequest,
   newProcessPaymentProfileSuspendingDueToPastDueTaskRequest,
@@ -67,6 +69,10 @@ import { ServiceHandler } from "@selfage/service_handler/service_handler";
 
 async function main() {
   // Commerce service
+  Dispatcher.create(
+    newListInitPaymentCreditGrantingTasksRequest,
+    newProcessInitPaymentCreditGrantingTaskRequest,
+  ).start();
   Dispatcher.create(
     newListPaymentMethodNeedsUpdateNotifyingTasksRequest,
     newProcessPaymentMethodNeedsUpdateNotifyingTaskRequest,
