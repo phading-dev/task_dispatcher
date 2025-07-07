@@ -2,26 +2,28 @@ import http = require("http");
 import { Dispatcher } from "./dispatcher";
 import { ENV_VARS } from "./env_vars";
 import {
-  newListInitPaymentCreditGrantingTasksRequest,
+  newListInitCreditGrantingTasksRequest,
   newListPaymentMethodNeedsUpdateNotifyingTasksRequest,
   newListPaymentProfileStateSyncingTasksRequest,
   newListPaymentProfileSuspendingDueToPastDueTasksRequest,
   newListPaymentProfileSuspensionNotifyingTasksRequest,
-  newListPaymentTasksRequest,
-  newListPayoutTasksRequest,
-  newListStripeConnectedAccountCreatingTasksRequest,
+  newListPaymentStripeInvoiceCreatingTasksRequest,
+  newListPaymentStripeInvoicePayingTasksRequest,
+  newListPayoutStripeTransferCreatingTasksRequest,
+  newListStripeConnectedAccountForPayoutCreatingTasksRequest,
   newListStripeConnectedAccountNeedsSetupNotifyingTasksRequest,
-  newListStripePaymentCustomerCreatingTasksRequest,
-  newProcessInitPaymentCreditGrantingTaskRequest,
+  newListStripeCustomerCreatingTasksRequest,
+  newProcessInitCreditGrantingTaskRequest,
   newProcessPaymentMethodNeedsUpdateNotifyingTaskRequest,
   newProcessPaymentProfileStateSyncingTaskRequest,
   newProcessPaymentProfileSuspendingDueToPastDueTaskRequest,
   newProcessPaymentProfileSuspensionNotifyingTaskRequest,
-  newProcessPaymentTaskRequest,
-  newProcessPayoutTaskRequest,
-  newProcessStripeConnectedAccountCreatingTaskRequest,
+  newProcessPaymentStripeInvoiceCreatingTaskRequest,
+  newProcessPaymentStripeInvoicePayingTaskRequest,
+  newProcessPayoutStripeTransferCreatingTaskRequest,
+  newProcessStripeConnectedAccountForPayoutCreatingTaskRequest,
   newProcessStripeConnectedAccountNeedsSetupNotifyingTaskRequest,
-  newProcessStripePaymentCustomerCreatingTaskRequest,
+  newProcessStripeCustomerCreatingTaskRequest,
 } from "@phading/commerce_service_interface/node/client";
 import {
   newListCoverImageDeletingTasksRequest,
@@ -70,8 +72,8 @@ import { ServiceHandler } from "@selfage/service_handler/service_handler";
 async function main() {
   // Commerce service
   Dispatcher.create(
-    newListInitPaymentCreditGrantingTasksRequest,
-    newProcessInitPaymentCreditGrantingTaskRequest,
+    newListInitCreditGrantingTasksRequest,
+    newProcessInitCreditGrantingTaskRequest,
   ).start();
   Dispatcher.create(
     newListPaymentMethodNeedsUpdateNotifyingTasksRequest,
@@ -90,24 +92,28 @@ async function main() {
     newProcessPaymentProfileStateSyncingTaskRequest,
   ).start();
   Dispatcher.create(
-    newListPaymentTasksRequest,
-    newProcessPaymentTaskRequest,
+    newListPaymentStripeInvoiceCreatingTasksRequest,
+    newProcessPaymentStripeInvoiceCreatingTaskRequest,
   ).start();
   Dispatcher.create(
-    newListPayoutTasksRequest,
-    newProcessPayoutTaskRequest,
+    newListPaymentStripeInvoicePayingTasksRequest,
+    newProcessPaymentStripeInvoicePayingTaskRequest,
   ).start();
   Dispatcher.create(
-    newListStripeConnectedAccountCreatingTasksRequest,
-    newProcessStripeConnectedAccountCreatingTaskRequest,
+    newListPayoutStripeTransferCreatingTasksRequest,
+    newProcessPayoutStripeTransferCreatingTaskRequest,
+  ).start();
+  Dispatcher.create(
+    newListStripeConnectedAccountForPayoutCreatingTasksRequest,
+    newProcessStripeConnectedAccountForPayoutCreatingTaskRequest,
   ).start();
   Dispatcher.create(
     newListStripeConnectedAccountNeedsSetupNotifyingTasksRequest,
     newProcessStripeConnectedAccountNeedsSetupNotifyingTaskRequest,
   ).start();
   Dispatcher.create(
-    newListStripePaymentCustomerCreatingTasksRequest,
-    newProcessStripePaymentCustomerCreatingTaskRequest,
+    newListStripeCustomerCreatingTasksRequest,
+    newProcessStripeCustomerCreatingTaskRequest,
   ).start();
 
   // Product service
