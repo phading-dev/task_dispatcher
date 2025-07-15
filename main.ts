@@ -10,6 +10,8 @@ import {
   newListPaymentStripeInvoiceCreatingTasksRequest,
   newListPaymentStripeInvoicePayingTasksRequest,
   newListPayoutStripeTransferCreatingTasksRequest,
+  newListPayoutStripeTransferDisabledNotifyingTasksRequest,
+  newListPayoutStripeTransferSuccessNotifyingTasksRequest,
   newListStripeConnectedAccountForPayoutCreatingTasksRequest,
   newListStripeConnectedAccountNeedsSetupNotifyingTasksRequest,
   newListStripeCustomerCreatingTasksRequest,
@@ -21,6 +23,8 @@ import {
   newProcessPaymentStripeInvoiceCreatingTaskRequest,
   newProcessPaymentStripeInvoicePayingTaskRequest,
   newProcessPayoutStripeTransferCreatingTaskRequest,
+  newProcessPayoutStripeTransferDisabledNotifyingTaskRequest,
+  newProcessPayoutStripeTransferSuccessNotifyingTaskRequest,
   newProcessStripeConnectedAccountForPayoutCreatingTaskRequest,
   newProcessStripeConnectedAccountNeedsSetupNotifyingTaskRequest,
   newProcessStripeCustomerCreatingTaskRequest,
@@ -102,6 +106,14 @@ async function main() {
   Dispatcher.create(
     newListPayoutStripeTransferCreatingTasksRequest,
     newProcessPayoutStripeTransferCreatingTaskRequest,
+  ).start();
+  Dispatcher.create(
+    newListPayoutStripeTransferDisabledNotifyingTasksRequest,
+    newProcessPayoutStripeTransferDisabledNotifyingTaskRequest,
+  ).start();
+  Dispatcher.create(
+    newListPayoutStripeTransferSuccessNotifyingTasksRequest,
+    newProcessPayoutStripeTransferSuccessNotifyingTaskRequest,
   ).start();
   Dispatcher.create(
     newListStripeConnectedAccountForPayoutCreatingTasksRequest,
