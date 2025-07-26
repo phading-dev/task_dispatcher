@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: task-dispatcher-deployment
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: task-dispatcher-pod
+  template:
+    metadata:
+      labels:
+        app: task-dispatcher-pod
+    spec:
+      serviceAccountName: task-dispatcher-account
+      containers:
+      - name: task-dispatcher-container
+        image: gcr.io/phading-prod/task-dispatcher:latest
+        ports:
+        - containerPort: 8080
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        resources:
+          requests:
+            cpu: "400m"
+            memory: "256Mi"
+          limits:
+            cpu: "400m"
+            memory: "256Mi"
+---
+apiVersion: monitoring.googleapis.com/v1
+kind: PodMonitoring
+metadata:
+  name: task-dispatcher-monitoring
+spec:
+  selector:
+    matchLabels:
+      app: task-dispatcher-pod
+  endpoints:
+  - port: 8080
+    path: /metricsz
+    interval: 30s
